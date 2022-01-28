@@ -47,5 +47,6 @@ if __name__ == '__main__':
   X3 = read_pixels(folder+'/blue')
   y1, y2, y3 = np.full(X1.shape[0],1), np.full(X2.shape[0], 2), np.full(X3.shape[0],3)
   X, y = np.concatenate((X1,X2,X3)), np.concatenate((y1,y2,y3))
+
   
 
