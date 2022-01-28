@@ -10,7 +10,7 @@ import os
 
 class BinDetector():
     folder_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(folder_path, 'parameters/classifier_weights.npy')
+    model_path = os.path.join(folder_path, 'classifier_weights.npy')
 
     def __init__(self):
         '''

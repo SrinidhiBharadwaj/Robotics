@@ -11,7 +11,7 @@ class PixelClassifier():
     tolerance = 1e-5
     epoch = 100
     folder_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(folder_path, 'parameters/pixel_weights.npy')
+    model_path = os.path.join(folder_path, 'pixel_weights.npy')
 
     def __init__(self):
         '''
