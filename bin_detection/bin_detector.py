@@ -10,7 +10,10 @@ import os
 
 class BinDetector():
     folder_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(folder_path, 'classifier_weights.npy')
+    model_path = os.path.join(folder_path, 'parameters/classifier_weights.npy')
+    mean = os.path.join(folder_path, 'parameters/pixel_mean.npy')
+    sigma = os.path.join(folder_path, 'parameters/pixel_var.npy')
+    theta = os.path.join(folder_path, 'parameters/pixel_theta.npy')
 
     def __init__(self):
         '''
@@ -18,14 +21,18 @@ class BinDetector():
                 e.g., parameters of your classifier
         '''
         self.weights = np.load(BinDetector.model_path)
+        self.pixel_mean = np.load(BinDetector.mean)
+        self.pixel_var = np.load(BinDetector.sigma)
+        self.pixel_prior = np.load(BinDetector.theta)
         self.color_classes = [1, 2, 3, 4, 5]
+        self.clf_name = "LogisticRegression"
 
     def softmax(self, z):
         val = np.exp(z)/np.sum(np.exp(z), axis=1).reshape(-1, 1)
         return val
 
     # Predict the mask based on the weigths of the classifier
-    def predict(self, X):
+    def predictLogistic(self, X):
         X = np.insert(X, 0, 1, axis=1)
         # Logistic regression to calculate the output and create masks
         z = np.dot(X, self.weights.T).reshape(-1, len(self.color_classes))
@@ -34,6 +41,22 @@ class BinDetector():
         # Vectorized method to save time for dataset with many pixels
         y = np.vectorize(lambda c: self.color_classes[c])(
             np.argmax(self.probabilities, axis=1))
+        return y
+
+    def predictGaussian(self, X):
+        y = np.zeros((X.shape[0], 1))
+        posterior_prob = np.zeros((len(self.color_classes), 1))
+        # Using the learned parameters
+        for row in range(X.shape[0]):
+            for cls in range(len(self.color_classes)):
+                prob_class_color = 0
+                for col in range(X.shape[1]):
+                    prob_class_color += np.log(self.pixel_var[cls, col]) + (((X[row, col]
+                                                                              - self.pixel_mean[cls, col])**2)/self.pixel_var[cls, col])
+                    #print(prob_class_color)
+                posterior_prob[cls] = prob_class_color + \
+                    np.log(1/self.pixel_prior[cls]**2)
+            y[row] = np.argmin(posterior_prob) + 1
         return y
 
     def recursive_erosion(self, img):
@@ -77,7 +100,11 @@ class BinDetector():
         img_hsv = img_hsv.astype(np.float64)/255
         img_hsv = np.reshape(img_hsv, (rows*cols, channels))
         # Obtain the prediction mask
-        y = self.predict(img_hsv)
+        if self.clf_name == "LogisticRegression":
+            y = self.predictLogistic(img_hsv)
+        else:
+            y = self.predictGaussian(img_hsv)
+
         # For debugging purpose
         mask = y
         mask[mask == 1] = 255
@@ -112,8 +139,8 @@ class BinDetector():
         img[img != 255] = 0
         kernel = np.ones((12, 12), np.uint8)
         # Erosion and closing to seperate 2 close boxes
-        img = cv2.erode(img, kernel, iterations=1)
-        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+        #img = cv2.erode(img, kernel, iterations=1)
+        #img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
         image_area = img.shape[0] * img.shape[1]
         # Obtain contours

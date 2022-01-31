@@ -8,19 +8,60 @@ import os
 
 
 class PixelClassifier():
+    def __init__(self):
+        '''
+                Initilize your classifier with any parameters and attributes you need
+        '''
+        #self.clf = GaussianNaiveBayes(num_classes=3)
+        self.clf = LogisticRegression()
+
+    def train(self, X, y, lr=0.001, batch_size=32, epochs=100, verbose=False):
+        self.clf.train(X, y, lr, batch_size, epochs, verbose)
+
+    def accuracy(self, X, y):
+        return self.clf.get_accuracy(X, y)
+
+    def get_parameters(self):
+        return self.clf.get_parameters()
+    
+    def get_loss(self):
+        return self.clf.loss
+
+
+    def classify(self, X):
+        '''
+                Classify a set of pixels into red, green, or blue
+
+                Inputs:
+                  X: n x 3 matrix of RGB values
+                Outputs:
+                  y: n x 1 vector of with {1,2,3} values corresponding to {red, green, blue}, respectively
+        '''
+        ################################################################
+        # YOUR CODE AFTER THIS LINE
+
+        y = self.clf.classify(X)
+
+        # YOUR CODE BEFORE THIS LINE
+        ################################################################
+        return y
+
+class LogisticRegression():
     tolerance = 1e-5
     epoch = 100
     folder_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(folder_path, 'pixel_weights.npy')
+    model_path = os.path.join(folder_path, 'parameters/pixel_weights.npy')
 
     def __init__(self):
         '''
                 Initilize your classifier with any parameters and attributes you need
         '''
-        self.tolerance = PixelClassifier.tolerance
-        self.epochs = PixelClassifier.epoch
-        self.weights = np.load(PixelClassifier.model_path)
+        self.tolerance = LogisticRegression.tolerance
+        self.epochs = LogisticRegression.epoch
+        self.weights = np.load(LogisticRegression.model_path)
         self.color_classes = [1, 2, 3]
+        self.class_labels = {1: 0, 2: 1, 3: 2}
+        self.loss = []
 
     # Helper functions
     def calc_loss(self, y, y_pred):
@@ -53,7 +94,10 @@ class PixelClassifier():
         self.color_classes = np.unique(y)
         # print(self.color_classes)
         # Create a dictionary for easier access (saves us time with adding +1 in the end)
-        self.class_labels = {1: 0, 2: 1, 3: 2}
+        #self.class_labels = {1: 0, 2: 1, 3: 2}
+        for i in range(len(self.color_classes)):
+            self.class_labels[i+1] = i
+
         X = np.insert(X, 0, 1, axis=1)
         y = np.eye(len(self.color_classes))[np.vectorize(
             lambda c: self.class_labels[c])(y).reshape(-1)]
@@ -89,9 +133,9 @@ class PixelClassifier():
             # Save the model weights
             np.save('parameters/pixel_weights.npy', self.weights)
 
-    def score(self, X, y):
-        score = np.mean(self.classify(X) == y)
-        return score
+    def get_accuracy(self, X, y):
+        accuracy = np.mean(self.classify(X) == y)
+        return accuracy
 
     def classify(self, X):
         '''
@@ -119,48 +163,66 @@ class PixelClassifier():
         ################################################################
         return y
 
+class GaussianNaiveBayes():
+    tolerance = 1e-5
+    epoch = 100
+    folder_path = os.path.dirname(os.path.abspath(__file__))
+    mean = os.path.join(folder_path, 'parameters/pixel_mean.npy')
+    sigma = os.path.join(folder_path, 'parameters/pixel_var.npy')
+    theta = os.path.join(folder_path, 'parameters/pixel_theta.npy')
 
-class BayesianCalssifier():
-
-    num_classes = 3  # One each for Red, Green and Blue channels
-
-    def __init__(self):
+    def __init__(self, num_classes):
         '''
                 Initilize your classifier with any parameters and attributes you need
         '''
-        self.pixel_mean = np.load("parameters/pixel_mean.npy")
-        self.pixel_var = np.load("parameters/pixel_var.npy")
-        self.prior = np.load("parameters/priors.npy")
+        self.pixel_mean = np.load(GaussianNaiveBayes.mean)
+        self.pixel_var = np.load(GaussianNaiveBayes.sigma)
+        self.prior = np.load(GaussianNaiveBayes.theta)
+        self.num_classes = num_classes
 
-    def set_distibution_parameters(self, X, y, X1, X2, X3, y1, y2, y3, verbose=False):
+    def get_parameters(self):
+        return self.pixel_mean, self.pixel_var, self.prior
+    
+    def get_accuracy(self, X, y):
+        accuracy = np.mean(self.classify(X) == y)
+        return accuracy
+
+    def train(self, X, y, lr=0.001, batch_size=32, epochs=100, verbose=False):
 
         print("Learning Gaussian parameters.....")
         if y.shape[0] != X.shape[0]:
             print("Size mismatch!")
 
-        red_pixels = X1.shape[0]
-        green_pixels = X2.shape[0]
-        blue_pixels = X3.shape[0]
+        Xy = np.append(X, y.reshape(-1, 1), axis=1)
+        X_list = []
+        for i in range(self.num_classes):
+          X_list.append(X[Xy[:, 3] == i+1])
+
+        color_list = []
+        for i in range(len(X_list)):
+          color_list.append(X_list[i].shape[0])
+
         total_pixels = X.shape[0]
+        x_temp = []
+        for i in range(len(X_list)):
+          x_temp.append(X_list[i])
+        #x_temp = [X1, X2, X3]
 
-        x_temp = [X1, X2, X3]
-
-        for i in range(PixelClassifier.num_classes):
+        for i in range(self.num_classes):
             for j in range(X.shape[1]):
                 self.pixel_mean[i][j] = np.mean(np.array(x_temp[i])[:, j])
                 self.pixel_var[i][j] = np.var(np.array(x_temp[i])[:, j])
 
-        self.red_prior = red_pixels/total_pixels
-        self.green_prior = green_pixels/total_pixels
-        self.blue_prior = blue_pixels/total_pixels
+        prior_list = []
+        for i in range(len(X_list)):
+          prior_list.append(color_list[i]/total_pixels)
 
-        self.prior = np.array(
-            [self.red_prior, self.green_prior, self.blue_prior])
+        #print(np.sum(prior_list))
+        
+        #prior_list = np.array(prior_list)
         np.save("parameters/pixel_mean.npy", self.pixel_mean)
         np.save("parameters/pixel_var.npy", self.pixel_var)
-        np.save("parameters/priors.npy", self.prior)
-        #print(self.pixel_mean, self.pixel_var, self.prior)
-        print("Learning Gaussian parameters done....")
+        np.save("parameters/pixel_theta.npy", prior_list)
 
     def classify(self, X):
         '''
@@ -178,19 +240,27 @@ class BayesianCalssifier():
         # print(self.pixel_mean)
         # print(self.pixel_var)
         y = np.zeros((X.shape[0], 1))
-        posterior_prob = np.zeros((PixelClassifier.num_classes, 1))
+        posterior_prob = np.zeros((self.num_classes, 1))
+        post_log = np.zeros((self.num_classes, 1))
         # Using the learned parameters
         for row in range(X.shape[0]):
-            for cls in range(PixelClassifier.num_classes):
+            for cls in range(self.num_classes):
                 prob_class_color = 0
+                #prob_class_colorLog = 0
                 for col in range(X.shape[1]):
-                    exp_term = ((X[row, col] - self.pixel_mean[cls, col])
-                                ** 2 / (self.pixel_var[cls, col]))
-                    norm_const = (0.5*np.pi*(self.pixel_var[cls, col]))
-                    prob_class_color += norm_const * np.exp(-exp_term)
-                posterior_prob[cls] = prob_class_color / self.prior[cls]
-                # print(posterior_prob[cls])
-            y[row] = np.argmax(posterior_prob) + 1
+                    # exp_term = ((X[row,col] 
+                    #                 - self.pixel_mean[cls,col])**2) / (2 * self.pixel_var[cls, col])
+                    # norm_const = 1/ np.sqrt(2*np.pi*(self.pixel_var[cls, col]))
+                    # prob_class_colorLog += norm_const * np.exp(-exp_term)
+                    prob_class_color += np.log(self.pixel_var[cls,col]) + (((X[row,col] 
+                                    - self.pixel_mean[cls,col])**2)/self.pixel_var[cls,col])
+                    
+                posterior_prob[cls] = prob_class_color + np.log(1/self.prior[cls]**2)
+                # post_log[cls] = prob_class_colorLog * self.prior[cls]
+                # print(post_log, posterior_prob)
+                #print(posterior_prob[cls])
+            y[row] = np.argmin(posterior_prob) + 1
+
         # YOUR CODE BEFORE THIS LINE
         ################################################################
         return y
