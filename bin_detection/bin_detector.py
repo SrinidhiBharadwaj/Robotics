@@ -154,7 +154,7 @@ class BinDetector():
             if (cv2.contourArea(contours[i]) > image_area/200):
                 x, y, width, height = cv2.boundingRect(contours[i])
                 # Bin statistics (not scalable for other items)
-                if height < 2.5 * width and height > 0.4 * width:
+                if height < 2 * width and height > 0.4 * width:
                     boxes.append([x, y, x + width, y + height])
 
         #boxes = self.recursive_erosion(img)
