@@ -151,7 +151,7 @@ class BinDetector():
         num_contours = nd_contours.shape[0]
         for i in range(num_contours):
             # print(cv2.contourArea(contours[i]))
-            if (cv2.contourArea(contours[i]) > image_area/500):
+            if (cv2.contourArea(contours[i]) > image_area/200):
                 x, y, width, height = cv2.boundingRect(contours[i])
                 # Bin statistics (not scalable for other items)
                 if height < 2.5 * width and height > 0.7 * width:
