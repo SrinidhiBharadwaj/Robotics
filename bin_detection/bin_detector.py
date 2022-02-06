@@ -137,7 +137,10 @@ class BinDetector():
 
         # Set all the other elements other than blue to be 0
         img[img != 255] = 0
-        kernel = np.ones((12, 12), np.uint8)
+        kernel = np.ones((3, 3), np.uint8)
+        img = cv2.erode(img, kernel, iterations=1)
+        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+        cv2.medianBlur(img, kernel.shape[0])
 
         image_area = img.shape[0] * img.shape[1]
          # Obtain contours
@@ -148,10 +151,10 @@ class BinDetector():
         num_contours = nd_contours.shape[0]
         for i in range(num_contours):
             # print(cv2.contourArea(contours[i]))
-            if (cv2.contourArea(contours[i]) > image_area/200):
+            if (cv2.contourArea(contours[i]) > image_area/500):
                 x, y, width, height = cv2.boundingRect(contours[i])
                 # Bin statistics (not scalable for other items)
-                if height < 2.5 * width and height > 1 * width:
+                if height < 1.5 * width and height > 0.8 * width:
                     boxes.append([x, y, x + width, y + height])
 
         #boxes = self.recursive_erosion(img)
