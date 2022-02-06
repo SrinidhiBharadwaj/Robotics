@@ -156,9 +156,7 @@ class BinDetector():
         img[img != 255] = 0
         kernel = np.ones((12, 12), np.uint8)
 
-        blurred = cv2.GaussianBlur(img, (9,9),0)
-        img, thresh = cv2.threshold(blurred, 127, 255,0)
-        boxes = self.get_boxes(thresh)
+        boxes = self.get_boxes(img)
 
         #boxes = self.recursive_erosion(img)
 
