@@ -156,15 +156,10 @@ class BinDetector():
         img[img != 255] = 0
         kernel = np.ones((12, 12), np.uint8)
 
-        boxes = self.get_boxes(img)
-       
+        blurred = cv2.GaussianBlur(img, (9,9),0)
+        img, thresh = cv2.threshold(blurred, 127, 255,0)
+        boxes = self.get_boxes(thresh)
 
-        if len(boxes) == 0:
-            # Erosion and closing to seperate 2 close boxes
-            img = cv2.erode(img, kernel, iterations=1)
-            img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
-            boxes = self.get_boxes(img)
-        
         #boxes = self.recursive_erosion(img)
 
         # YOUR CODE BEFORE THIS LINE
