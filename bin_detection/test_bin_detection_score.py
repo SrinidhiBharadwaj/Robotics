@@ -6,7 +6,7 @@ Not part of the project
 from bin_detector import BinDetector
 import cv2, os, glob
 import numpy as np 
-
+from matplotlib import pyplot as plt
 
 class TestBin():
   def __init__(self):
@@ -43,6 +43,33 @@ class TestBin():
           break
     return accuracy / num_true_boxes
 
+  def plot_box(self, img, mask, box, i):
+    #print(box.squeeze())
+   
+    for j in range(len(box)):
+      boxed_im = cv2.rectangle(img, (box[j][0], box[j][1]), 
+                              (box[j][2], box[j][3]), (255, 0, 0), 5)
+
+    fig, axs = plt.subplots(1,2, figsize=(10, 4))
+    ax1= fig.add_subplot(1,2,1)
+    ax1.title.set_text("Mask Image")
+    ax1.title.set_size(15)
+    ax1.axis('off')
+    ax1.imshow(mask, cmap='gray')
+    axs[0].axis('off')
+
+    ax1= fig.add_subplot(1,2,2)
+    ax1.title.set_text("Original Image with Bounding Box")
+    ax1.title.set_size(15)
+    ax1.axis('off')
+    if len(box) != 0:
+      ax1.imshow(boxed_im, cmap='gray')
+    else:
+      ax1.imshow(img, cmap='gray')
+    axs[1].axis('off')
+    plt.savefig("Detection{0}".format(i))
+
+    plt.show()
 
   def test_partial_boxes(self, set_score=None):
     """Bin Detection"""
@@ -52,7 +79,7 @@ class TestBin():
     img_list.sort()
     gt_box_list.sort()
     score = 0
-    print(img_list)
+    #print(img_list)
     for i in range(len(img_list)):
         #print("Scoring started")
         img = cv2.imread(img_list[i])
@@ -72,10 +99,12 @@ class TestBin():
         for j in range(int(len(l)/4)):
           gt_boxes.append(l[j*4:j*4 + 4]) # ground truth bottom left and top right coordinates
 
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         mask_img = self.detector.segment_image(img)
 
         pred_boxes = self.detector.get_bounding_boxes(mask_img) # predicted coordinates
-        print(gt_boxes)
+        self.plot_box(img_rgb, mask_img, pred_boxes, i)
+        # print(gt_boxes)
         accuracy = self.compare_boxes(gt_boxes, pred_boxes)
         score+=accuracy
         print("{} for file {}".format(accuracy, img_list[i]))

@@ -79,6 +79,23 @@ class BinDetector():
                     boxes.append(self.recursive_erosion(img))
         return boxes
 
+    def get_boxes(self, img):
+        image_area = img.shape[0] * img.shape[1]
+         # Obtain contours
+        contours, _ = cv2.findContours(
+            img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
+        boxes = []
+        nd_contours = np.asarray(contours, dtype=object)
+        num_contours = nd_contours.shape[0]
+        for i in range(num_contours):
+            # print(cv2.contourArea(contours[i]))
+            if (cv2.contourArea(contours[i]) > image_area/200):
+                x, y, width, height = cv2.boundingRect(contours[i])
+                # Bin statistics (not scalable for other items)
+                if height < 2.5 * width and height > 1 * width:
+                    boxes.append([x, y, x + width, y + height])
+        return boxes 
+               
     def segment_image(self, img):
         '''
                 Obtain a segmented image using a color classifier,
@@ -138,25 +155,16 @@ class BinDetector():
         # Set all the other elements other than blue to be 0
         img[img != 255] = 0
         kernel = np.ones((12, 12), np.uint8)
-        # Erosion and closing to seperate 2 close boxes
-        #img = cv2.erode(img, kernel, iterations=1)
-        #img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
-        image_area = img.shape[0] * img.shape[1]
-        # Obtain contours
-        contours, _ = cv2.findContours(
-            img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
-        boxes = []
-        nd_contours = np.asarray(contours, dtype=object)
-        num_contours = nd_contours.shape[0]
-        for i in range(num_contours):
-            # print(cv2.contourArea(contours[i]))
-            if (cv2.contourArea(contours[i]) > image_area/200):
-                x, y, width, height = cv2.boundingRect(contours[i])
-                # Bin statistics (not scalable for other items)
-                if height < 2.5 * width and height > 1 * width:
-                    boxes.append([x, y, x + width, y + height])
+        boxes = self.get_boxes(img)
+       
 
+        if len(boxes) == 0:
+            # Erosion and closing to seperate 2 close boxes
+            img = cv2.erode(img, kernel, iterations=1)
+            img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+            boxes = self.get_boxes(img)
+        
         #boxes = self.recursive_erosion(img)
 
         # YOUR CODE BEFORE THIS LINE
