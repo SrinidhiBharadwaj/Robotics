@@ -139,7 +139,7 @@ class BinDetector():
         img[img != 255] = 0
         kernel = np.ones((3, 3), np.uint8)
         img = cv2.dilate(img, kernel, iterations=1)
-        img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
         img = cv2.medianBlur(img, 5)
 
         image_area = img.shape[0] * img.shape[1]
