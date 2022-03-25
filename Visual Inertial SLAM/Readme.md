@@ -34,5 +34,3 @@ Part c): Repeat the above step with vi_slam variable set to True.
 Note: The default code considers only a subset of the entire feature set. Currently it is set to 200, to change the number of features, please update the "num_features_kept" varaible in main.py to desired value.
     More number of features takes more time. Depending on the RAM size, code execution gets really slow if the features kept are greater than 500.
 
-Please note that I have added another variable to "visualize_trajectory_2d" to visualize the landmarks as it was missing in the default code. 
-
