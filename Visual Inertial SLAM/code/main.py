@@ -15,8 +15,8 @@ Author: Srinidhi Kalgundi Srinivas
 
 import numpy as np
 from pr3_utils import *
-from predict import predict
-from update import update
+from ekf_predict import predict
+from ekf_update import update
 np.set_printoptions(suppress=True)
 from tqdm import tqdm
 import pickle
