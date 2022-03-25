@@ -25,7 +25,7 @@ Note: Data for the project is included in the folder.
 
 ### Instructions for running the code:
 
-- Install the libraries mentioned in the requirements.txt, a simple pip3 install -r requirements.txt will suffice
+- Install the libraries mentioned in the requirements.txt, a simple pip3 install -r requirements.txt will suffice <br>
 Part a) and b):
 - Ensure that the variable vi_slam in main.py is set to False. "ekf_update" function of update.py relies on this flag to either run full SLAM or just the map update
 
