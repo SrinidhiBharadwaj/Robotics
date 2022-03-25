@@ -9,7 +9,7 @@ Please ensure that the "data" folder is added at the root location and not insid
 
 ### High level organization:
 |--code<br>
-|------/src (Folder containing the source code)<br><br>
+|------/src (Folder containing the source code)<br>
 |------/data (Unused)<br>
 |--cam\_utils<br>
 |--Readme.md<br>
