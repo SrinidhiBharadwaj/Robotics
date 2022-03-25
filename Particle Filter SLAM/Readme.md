@@ -8,18 +8,17 @@ Note: Data for the project is to be downloaded from links mentioned in ECE276A_P
 Please ensure that the "data" folder is added at the root location and not inside the "code" folder.
 
 ### High level organization:
-|--code
-|------/src (Folder containing the source code)
-|------/data (Unused)
-|--data (Add param, stereo_images and sensor_data folders here)
-|--cam\_utils
-|--Readme.md
-|--Images
-|------/FirstLidar.png
-|------/FinalSLAM.png
-|------/TextureMap.png
-|------/DeadRekon.jpg
-|------/MappingGif.gif
+|--code<br>
+|------/src (Folder containing the source code)<br><br>
+|------/data (Unused)<br>
+|--cam\_utils<br>
+|--Readme.md<br>
+|--Images<br>
+|------/FirstLidar.png<br>
+|------/FinalSLAM.png<br>
+|------/TextureMap.png<br>
+|------/DeadRekon.jpg<br>
+|------/MappingGif.gif<br>
 
 ### Source Code Organization:
 - code/src/mapping.py - Contains Map generation class. Map log odds are updated in this class
