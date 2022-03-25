@@ -6,15 +6,16 @@
 Note: Data for the project is included in the folder.
 
 ### High level organization:
-|--code
-|----/data
-|-------/03.npz
-|-------/10.npz
-|----/main.py
-|----/predict.py
-|----/update.py
-|----/pr3_utils.py
-|----/requirements.txt
+
+|--code <br>
+|----/data <br>
+|-------/03.npz<br>
+|-------/10.npz<br>
+|----/main.py<br>
+|----/predict.py<br>
+|----/update.py<br>
+|----/pr3_utils.py<br>
+|----/requirements.txt<br>
 
 ### Source Code Organization:
 - code/predict.py - Contains prediction class used for EKF prediction step. Uses motion model to predict updated IMU pose.
