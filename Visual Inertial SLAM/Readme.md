@@ -18,8 +18,8 @@ Note: Data for the project is included in the folder.
 |----/requirements.txt<br>
 
 ### Source Code Organization:
-- code/predict.py - Contains prediction class used for EKF prediction step. Uses motion model to predict updated IMU pose.
-- code/update.py - Contains update class. "ekf_update" function of this class is responsible for updating the IMU pose as well as the landmarks. 
+- code/ekf_predict.py - Contains prediction class used for EKF prediction step. Uses motion model to predict updated IMU pose.
+- code/ekf_update.py - Contains update class. "ekf_update" function of this class is responsible for updating the IMU pose as well as the landmarks. 
 - code/main.py - Entry point of the code base. Loops through the data provided for all time steps and makes appropriate calls to predict and update function.
 - code/pr3_utils.py - Contains class and functions that are used for vizualization and reading data.
 
